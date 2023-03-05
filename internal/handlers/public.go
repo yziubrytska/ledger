@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"ledger/internal/logic"
+	"ledger/internal/models"
 	"net/http"
 )
 
@@ -17,10 +18,7 @@ type BalanceResponse struct {
 }
 
 type HistoryResponse struct {
-	History []struct {
-		Date        string `json:"date"`
-		Transaction string `json:"transaction"`
-	} `json:"history"`
+	History []models.Transaction `json:"history"`
 }
 
 type CustomValidator struct {
@@ -91,4 +89,11 @@ func (p publicAPI) History(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	transactions, err := p.service.History(userID)
+	if err != nil {
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, HistoryResponse{History: transactions})
 }
