@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	AddMoney(userID uuid.UUID, balance string) error
-	Balance(userID uuid.UUID) (string, error)
-	History(userID uuid.UUID) ([]models.Transaction, error)
+	AddMoney(transaction models.Transactions)
+	Balance(userID uuid.UUID) (int64, error)
+	History(userID uuid.UUID) ([]*models.Transactions, error)
 }
