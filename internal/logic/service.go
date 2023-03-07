@@ -2,12 +2,13 @@ package logic
 
 import (
 	"github.com/google/uuid"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"ledger/internal/adapters"
 	"ledger/internal/models"
+	"time"
 )
 
 var (
@@ -15,14 +16,16 @@ var (
 )
 
 type service struct {
-	repo   adapters.Repository
-	logger *logrus.Entry
+	repo    adapters.Repository
+	logger  *logrus.Entry
+	timeNow func() time.Time
 }
 
 func NewService(r adapters.Repository, l *logrus.Entry) Service {
 	return &service{
-		repo:   r,
-		logger: l,
+		repo:    r,
+		logger:  l,
+		timeNow: time.Now,
 	}
 }
 
@@ -48,10 +51,11 @@ func (s service) AddMoney(transaction models.Transactions) {
 				ID:     transaction.ID,
 				UserID: transaction.UserID,
 				Sum:    transaction.Sum,
+				Date:   s.timeNow(),
 			},
 		},
 	})
-	if dbError, ok := err.(*pq.Error); ok && dbError.Code.Name() == "unique_violation" {
+	if dbError, ok := err.(*pgconn.PgError); ok && dbError.Code == "23505" {
 		s.logger.WithError(err).Errorf("transaction already executed for user id %s", transaction.UserID.String())
 
 		return

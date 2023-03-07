@@ -36,20 +36,26 @@ func NewRepository(db *gorm.DB) Repository {
 }
 
 func (r repository) AddMoney(account models.Accounts) error {
-	err := r.db.Model(&models.Accounts{}).Save(&account).Error
+	k := models.Transactions{}
+	r.db.Where("id = ?", account.Transactions[0].ID).FirstOrCreate(&k)
+	if err := r.db.Model(&models.Transactions{}).Create(&account.Transactions).Error; err != nil {
+		return err
+	}
+	err := r.db.Model(&models.Accounts{ID: account.ID}).Save(&account).Error
 	if err != nil {
 		return errors.Wrap(err, "error while updating a balance")
 	}
-
 	return nil
 }
 
 func (r repository) GetAccount(userID uuid.UUID) (*models.Accounts, error) {
-	var result *models.Accounts
-	err := r.db.Model(models.Accounts{ID: userID}).Preload("Associations").First(result).Error
+	var result models.Accounts
+	err := r.db.Model(models.Accounts{ID: userID}).Preload("Transactions", func(db *gorm.DB) *gorm.DB {
+		return db.Order("transactions.date ASC")
+	}).First(&result).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return &result, nil
 }

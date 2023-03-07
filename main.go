@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,7 @@ import (
 
 func main() {
 	e := echo.New()
+	e.Validator = &handlers.CustomValidator{Validator: validator.New()}
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "method=${method}, uri=${uri}, status=${status}\n",
 	}))
@@ -49,14 +51,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := c.Provide(handlers.NewLogrusEntry); err != nil {
+	if err := c.Provide(logic.NewLogrusEntry); err != nil {
 		log.Fatal(err)
 	}
 
 	err := c.Invoke(func(api *handlers.PublicAPI) {
 		e.POST("/users/:uid/add", api.AddMoney)
-		e.POST("/users/:uid/balance", api.Balance)
-		e.POST("/users/:uid/history", api.History)
+		e.GET("/users/:uid/balance", api.Balance)
+		e.GET("/users/:uid/history", api.History)
 		if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}

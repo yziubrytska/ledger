@@ -24,11 +24,11 @@ type HistoryResponse struct {
 }
 
 type CustomValidator struct {
-	validator *validator.Validate
+	Validator *validator.Validate
 }
 
 func (cv *CustomValidator) Validate(i interface{}) error {
-	if err := cv.validator.Struct(i); err != nil {
+	if err := cv.Validator.Struct(i); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return nil
@@ -55,7 +55,7 @@ func (p PublicAPI) AddMoney(c echo.Context) error {
 	}
 
 	m := new(AddMoneyRequest)
-	if err = c.Bind(m); err != nil {
+	if err = c.Bind(&m); err != nil {
 		p.logger.WithError(err).Error("error binding the request")
 
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -84,7 +84,7 @@ func (p PublicAPI) Balance(c echo.Context) error {
 
 	balance, err := p.service.Balance(userID)
 	if err != nil {
-		p.logger.WithError(err).Error("error getting the balance by user id %s", userID.String())
+		p.logger.WithError(err).Errorf("error getting the balance by user id %s", userID.String())
 
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

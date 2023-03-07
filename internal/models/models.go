@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 type Accounts struct {
@@ -14,14 +14,7 @@ type Accounts struct {
 
 type Transactions struct {
 	ID     uuid.UUID `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"ID,omitempty"`
-	UserID uuid.UUID
-	Date   pgtype.Time
+	UserID uuid.UUID `gorm:"foreignKey:ID"`
+	Date   time.Time
 	Sum    int64
-}
-
-type PgTransactions struct {
-	ID     uuid.UUID `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"ID,omitempty"`
-	UserID uuid.UUID
-	Date   pgtype.Time
-	Sum    pgtype.Numeric
 }

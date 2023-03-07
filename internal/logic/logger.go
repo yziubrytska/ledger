@@ -1,4 +1,4 @@
-package handlers
+package logic
 
 import "github.com/sirupsen/logrus"
 
