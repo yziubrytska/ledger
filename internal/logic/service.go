@@ -11,10 +11,6 @@ import (
 	"time"
 )
 
-var (
-	ErrAlreadyExecuted = errors.New("transaction was already executed")
-)
-
 type service struct {
 	repo    adapters.Repository
 	logger  *logrus.Entry
